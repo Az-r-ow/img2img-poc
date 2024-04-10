@@ -1,0 +1,8 @@
+pillow
+diffusers
+flask
+accelerate
+safetensors
+transformers
+gradio
+webcolors
