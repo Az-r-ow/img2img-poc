@@ -76,7 +76,6 @@ def main():
         num_inference_steps=steps, generator=generator,
     ).images[0]
 
-    edited_image = None
     return [seed, text_cfg_scale, image_cfg_scale, edited_image]
   
   def reset():
