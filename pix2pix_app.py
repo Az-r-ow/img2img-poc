@@ -29,27 +29,6 @@ def main():
     pipe = StableDiffusionInstructPix2PixPipeline.from_pretrained(
         model_id, torch_dtype=torch.float16, safety_checker=None
     ).to("cuda")
-    example_image = Image.open("imgs/office.jpg").convert("RGB")
-
-    def load_example(
-        steps: int,
-        randomize_seed: bool,
-        seed: int,
-        randomize_cfg: bool,
-        text_cfg_scale: float,
-        image_cfg_scale: float,
-    ):
-        example_instruction = "Pain the wall in blue"
-        return [example_image, example_instruction] + generate(
-            example_image,
-            example_instruction,
-            steps,
-            randomize_seed,
-            seed,
-            randomize_cfg,
-            text_cfg_scale,
-            image_cfg_scale,
-        )
 
     def generate(
         input_image: Image.Image,
@@ -116,8 +95,6 @@ def main():
             with gr.Column(scale=1, min_width=100):
                 generate_button = gr.Button("Generate")
             with gr.Column(scale=1, min_width=100):
-                load_button = gr.Button("Load Example")
-            with gr.Column(scale=1, min_width=100):
                 reset_button = gr.Button("Reset")
             with gr.Column(scale=2):
                 instruction = gr.Textbox(
@@ -159,26 +136,6 @@ def main():
             image_cfg_scale = gr.Number(value=1.5, label="Image CFG", interactive=True)
 
         gr.Markdown(help_text)
-
-        load_button.click(
-            fn=load_example,
-            inputs=[
-                steps,
-                randomize_seed,
-                seed,
-                randomize_cfg,
-                text_cfg_scale,
-                image_cfg_scale,
-            ],
-            outputs=[
-                input_image,
-                instruction,
-                seed,
-                text_cfg_scale,
-                image_cfg_scale,
-                edited_image,
-            ],
-        )
 
         generate_button.click(
             fn=generate,
