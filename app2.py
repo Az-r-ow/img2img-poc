@@ -45,7 +45,6 @@ def inference(image, map, gs, prompt, negative_prompt):
     map = preprocess_map(map)
     edited_images = base(
         prompt=prompt,
-        original_image=image,
         image=image,
         strength=1,
         guidance_scale=gs,
@@ -53,7 +52,6 @@ def inference(image, map, gs, prompt, negative_prompt):
         negative_prompt=negative_prompt,
         map=map,
         num_inference_steps=NUM_INFERENCE_STEPS,
-        denoising_end=0.8,
         output_type="latent",
     ).images[0]
     # edited_images = refiner(
