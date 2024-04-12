@@ -123,4 +123,4 @@ with gr.Blocks() as demo:
     )
     clr_btn.add(output)
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(share=False, server_name="0.0.0.0", server_port=9000)
