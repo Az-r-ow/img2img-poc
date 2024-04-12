@@ -8,6 +8,21 @@ from webcolors import hex_to_name
 
 model_id = "timbrooks/instruct-pix2pix"
 
+help_text = """
+If you're not getting what you want, there may be a few reasons:
+1. Is the image not changing enough? Your Image CFG weight may be too high. This value dictates how similar the output should be to the input. It's possible your edit requires larger changes from the original image, and your Image CFG weight isn't allowing that. Alternatively, your Text CFG weight may be too low. This value dictates how much to listen to the text instruction. The default Image CFG of 1.5 and Text CFG of 7.5 are a good starting point, but aren't necessarily optimal for each edit. Try:
+    * Decreasing the Image CFG weight, or
+    * Increasing the Text CFG weight, or
+2. Conversely, is the image changing too much, such that the details in the original image aren't preserved? Try:
+    * Increasing the Image CFG weight, or
+    * Decreasing the Text CFG weight
+3. Try generating results with different random seeds by setting "Randomize Seed" and running generation multiple times. You can also try setting "Randomize CFG" to sample new Text CFG and Image CFG values each time.
+4. Rephrasing the instruction sometimes improves results (e.g., "turn him into a dog" vs. "make him a dog" vs. "as a dog").
+5. Increasing the number of steps sometimes improves results.
+6. Do faces look weird? The Stable Diffusion autoencoder has a hard time with faces that are small in the image. Try:
+    * Cropping the image so the face takes up a larger portion of the frame.
+"""
+
 
 def main():
 
@@ -142,6 +157,8 @@ def main():
             )
             text_cfg_scale = gr.Number(value=7.5, label="Text CFG", interactive=True)
             image_cfg_scale = gr.Number(value=1.5, label="Image CFG", interactive=True)
+
+        gr.Markdown(help_text)
 
         load_button.click(
             fn=load_example,

@@ -3,9 +3,13 @@ import torch
 from torchvision import transforms
 from SD2.diff_pipe import StableDiffusionDiffImg2ImgPipeline
 from diffusers import DPMSolverMultistepScheduler
+from PIL import Image, ImageFilter, ImageOps
+from transformers import pipeline
 
 NUM_INFERENCE_STEPS = 50
 device = "cuda"
+
+segment = pipeline("image-segmentation", model="facebook/maskformer-swin-large-ade")
 
 base = StableDiffusionDiffImg2ImgPipeline.from_pretrained(
     "stabilityai/stable-diffusion-2",
@@ -15,6 +19,28 @@ base = StableDiffusionDiffImg2ImgPipeline.from_pretrained(
 ).to(device)
 
 base.scheduler = DPMSolverMultistepScheduler.from_config(base.scheduler.config)
+
+
+def segment_image_generate_mapping(img):
+    predictions = segment(img)
+    greyscale_image = None
+    for i in range(len(predictions)):
+        if pred[i]["label"] == "wall":
+            inverted_image = ImageOps.invert(pred[i]["mask"])
+            greyscale_image = inverted_image.convert("LA").convert("RGB")
+            # Apply a Gaussian blur to the binary mask to smooth the boundaries
+            greyscale_image = greyscale_image.point(
+                lambda p: p - 10 if p > 127.5 else p + 75
+            )
+            smoothed_mask = greyscale_image.filter(
+                ImageFilter.BoxBlur(5)
+            )  # Adjust radius as needed
+
+            # Paste the smoothed mask onto a black background to create the smoothed image
+            smoothed_image = Image.new("L", greyscale_image.size, color=0)
+            smoothed_image.paste(smoothed_mask, (0, 0))
+            greyscale_image = smoothed_image
+    return greyscale_image
 
 
 def preprocess_image(image):
@@ -37,7 +63,8 @@ def preprocess_map(map):
     return map
 
 
-def inference(image, map, gs, prompt, negative_prompt):
+def inference(image, gs, prompt, negative_prompt):
+    map = segment_image_generate_mapping(image)
     validate_inputs(image, map)
     image = preprocess_image(image)
     map = preprocess_map(map)
@@ -52,7 +79,7 @@ def inference(image, map, gs, prompt, negative_prompt):
         num_inference_steps=NUM_INFERENCE_STEPS,
         output_type="latent",
     ).images[0]
-    return edited_images
+    return map, edited_images
 
 
 def validate_inputs(image, map):
@@ -81,7 +108,7 @@ with gr.Blocks() as demo:
         with gr.Column():
             with gr.Row():
                 input_image = gr.Image(label="Input Image", type="pil")
-                change_map = gr.Image(label="Change Map", type="pil")
+                change_map = gr.Image(label="Change Map", type="pil", interactive=False)
             gs = gr.Slider(0, 28, value=7.5, label="Guidance Scale")
             prompt = gr.Textbox(label="Prompt")
             neg_prompt = gr.Textbox(label="Negative Prompt")
@@ -92,18 +119,13 @@ with gr.Blocks() as demo:
                 run_btn = gr.Button("Run", variant="primary")
 
         output = gr.Image(label="Output Image")
-    gr.Examples(
-        examples=[example1, example2],
-        inputs=[input_image, change_map, gs, prompt, neg_prompt],
-    )
-    gr.Markdown(
-        "Differential Diffusion with SDXL; Thanks to the community for the prompts in the examples."
-    )
+    gr.Markdown("Differential Diffusion with Stable Diffusion 2.")
     run_btn.click(
         inference,
-        inputs=[input_image, change_map, gs, prompt, neg_prompt],
-        outputs=output,
+        inputs=[input_image, gs, prompt, neg_prompt],
+        outputs=[change_map, output],
     )
+
     clr_btn.add(output)
 if __name__ == "__main__":
-    demo.launch(share=False, server_name="0.0.0.0", server_port=9000)
+    demo.launch(share=False, server_name="0.0.0.0", server_port=8000)
