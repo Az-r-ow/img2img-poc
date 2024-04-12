@@ -1,5 +1,4 @@
 import gradio as gr
-import spaces
 import torch
 from torchvision import transforms
 from SD2.diff_pipe import StableDiffusionDiffImg2ImgPipeline
