@@ -8,15 +8,13 @@ NUM_INFERENCE_STEPS = 50
 device = "cuda"
 
 base = StableDiffusionDiffImg2ImgPipeline.from_pretrained(
-    "timbrooks/instruct-pix2pix",
+    "stabilityai/stable-diffusion-2",
     torch_dtype=torch.float16,
     variant="fp16",
     use_safetensors=True,
 ).to(device)
 
-
 base.scheduler = DPMSolverMultistepScheduler.from_config(base.scheduler.config)
-# refiner.scheduler = DPMSolverMultistepScheduler.from_config(base.scheduler.config)
 
 
 def preprocess_image(image):
@@ -54,18 +52,6 @@ def inference(image, map, gs, prompt, negative_prompt):
         num_inference_steps=NUM_INFERENCE_STEPS,
         output_type="latent",
     ).images[0]
-    # edited_images = refiner(
-    #     prompt=prompt,
-    #     original_image=image,
-    #     image=edited_images,
-    #     strength=1,
-    #     guidance_scale=7.5,
-    #     num_images_per_prompt=1,
-    #     negative_prompt=negative_prompt,
-    #     map=map,
-    #     num_inference_steps=NUM_INFERENCE_STEPS,
-    #     denoising_start=0.8,
-    # ).images[0]
     return edited_images
 
 
