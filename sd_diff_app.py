@@ -25,8 +25,8 @@ def segment_image_generate_mapping(img):
     predictions = segment(img)
     greyscale_image = None
     for i in range(len(predictions)):
-        if pred[i]["label"] == "wall":
-            inverted_image = ImageOps.invert(pred[i]["mask"])
+        if predictions[i]["label"] == "wall":
+            inverted_image = ImageOps.invert(predictions[i]["mask"])
             greyscale_image = inverted_image.convert("LA").convert("RGB")
             # Apply a Gaussian blur to the binary mask to smooth the boundaries
             greyscale_image = greyscale_image.point(
@@ -64,10 +64,10 @@ def preprocess_map(map):
 
 
 def inference(image, gs, prompt, negative_prompt):
-    map = segment_image_generate_mapping(image)
-    validate_inputs(image, map)
+    image_mapping = segment_image_generate_mapping(image)
+    validate_inputs(image, image_mapping)
     image = preprocess_image(image)
-    map = preprocess_map(map)
+    map = preprocess_map(image_mapping)
     edited_images = base(
         prompt=prompt,
         image=image,
@@ -79,7 +79,7 @@ def inference(image, gs, prompt, negative_prompt):
         num_inference_steps=NUM_INFERENCE_STEPS,
         output_type="latent",
     ).images[0]
-    return map, edited_images
+    return image_mapping, edited_images
 
 
 def validate_inputs(image, map):

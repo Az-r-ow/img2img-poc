@@ -9,3 +9,4 @@ certifi
 torch
 packaging
 torchvision
+scipy
