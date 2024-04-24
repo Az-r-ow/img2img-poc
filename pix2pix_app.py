@@ -54,7 +54,6 @@ def main():
         )
 
         width, height = input_image.size
-        # width, height = (100, 100)
         factor = 512 / max(width, height)
         factor = math.ceil(min(width, height) * factor / 64) * 64 / min(width, height)
         width = int((width * factor) // 64) * 64
