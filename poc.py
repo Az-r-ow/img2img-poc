@@ -28,7 +28,7 @@ If the image changes a lot, regenerate with the `Change Less` button. It will in
 Removing the image will reset the values to default.
 """
 
-DEFAULT_INSTRUCTION = "paint walls in {color}"
+DEFAULT_INSTRUCTION = "paint the walls in : {color}"
 
 DEFAULT_SEED = 1
 DEFAULT_IMAGE_CFG = 1
